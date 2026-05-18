@@ -1,0 +1,224 @@
+
+
+package com.example.employee.controller;
+import com.example.employee.model.Attendance;
+import com.example.employee.service.AttendanceService;
+import io.swagger.v3.oas.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+import java.time.LocalDate;
+import java.util.*;
+@RestController
+@RequestMapping("/api/attendance")
+@CrossOrigin(origins = "*")
+@RequiredArgsConstructor
+@Tag(name = "Attendance Management", description = "APIs for tracking attendance")
+public class AttendanceController {
+    private final AttendanceService service;
+
+    @PostMapping("/checkin/{employeeId}")
+    @Operation(summary = "Employee check in")
+    public ResponseEntity<Attendance> checkIn(@PathVariable String employeeId){
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.checkIn(employeeId));
+    }
+
+    @PutMapping("/checkout/{employeeId}")
+    @Operation(summary = "Employee check out")
+    public ResponseEntity<Attendance> checkOut(@PathVariable String employeeId){
+        return ResponseEntity.ok(service.checkOut(employeeId));
+    }
+
+    @GetMapping("/employee/{empId}")
+    @Operation(summary = "Get attendance by employee")
+    public ResponseEntity<List<Attendance>> getByEmployee(@PathVariable String empId){
+        return ResponseEntity.ok(service.getByEmployee(empId));
+    }
+
+    @GetMapping("/date/{date}")
+    @Operation(summary = "Get attendance by date")
+    public ResponseEntity<List<Attendance>> getByDate(
+            @PathVariable @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate date){
+        return ResponseEntity.ok(service.getByDate(date));
+    }
+
+    @GetMapping("/report/{empId}")
+    @Operation(summary = "Get monthly attendance report")
+    public ResponseEntity<Map<String,Object>> getMonthlyReport(
+            @PathVariable String empId,
+            @RequestParam int month,
+            @RequestParam int year){
+        return ResponseEntity.ok(service.getMonthlyReport(empId,month,year));
+    }
+
+    @PostMapping("/absent/{employeeId}")
+    @Operation(summary = "Mark employee as absent")
+    public ResponseEntity<Attendance> markAbsent(
+            @PathVariable String employeeId,
+            @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required=false,defaultValue="") String remarks){
+        return ResponseEntity.ok(service.markAbsent(employeeId,date,remarks));
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String,String>> handleError(RuntimeException e){
+        return ResponseEntity.badRequest().body(Map.of("error",e.getMessage()));
+    }
+}
+EOF
+
+
+package com.example.employee.controller;
+import com.example.employee.model.LeaveRequest;
+import com.example.employee.service.LeaveService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+import java.util.*;
+@RestController @RequestMapping("/api/leaves")
+@CrossOrigin(origins = "*") @RequiredArgsConstructor
+public class LeaveController {
+    private final LeaveService leaveService;
+    @PostMapping("/apply")
+    public ResponseEntity<LeaveRequest> apply(@RequestBody LeaveRequest req){
+        return ResponseEntity.status(HttpStatus.CREATED).body(leaveService.applyLeave(req));
+    }
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<LeaveRequest> approve(@PathVariable String id,@RequestParam String approvedBy){
+        return ResponseEntity.ok(leaveService.approveLeave(id,approvedBy));
+    }
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<LeaveRequest> reject(@PathVariable String id,@RequestParam String reason){
+        return ResponseEntity.ok(leaveService.rejectLeave(id,reason));
+    }
+    @GetMapping("/employee/{empId}")
+    public ResponseEntity<List<LeaveRequest>> getByEmployee(@PathVariable String empId){
+        return ResponseEntity.ok(leaveService.getByEmployee(empId));
+    }
+    @GetMapping("/pending")
+    public ResponseEntity<List<LeaveRequest>> getPending(){return ResponseEntity.ok(leaveService.getPending());}
+    @GetMapping
+    public ResponseEntity<List<LeaveRequest>> getAll(){return ResponseEntity.ok(leaveService.getAll());}
+}
+
+EOF
+
+
+package com.example.employee.controller;
+import com.example.employee.model.Payroll;
+import com.example.employee.service.PayrollService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+@RestController @RequestMapping("/api/payroll")
+@CrossOrigin(origins = "*") @RequiredArgsConstructor
+public class PayrollController {
+    private final PayrollService payrollService;
+    @PostMapping("/generate")
+    public ResponseEntity<Payroll> generate(
+            @RequestParam String employeeId,
+            @RequestParam String month,
+            @RequestParam int year){
+        return ResponseEntity.status(HttpStatus.CREATED).body(payrollService.generatePayroll(employeeId,month,year));
+    }
+    @GetMapping("/{id}/payslip")
+    public ResponseEntity<byte[]> downloadPayslip(@PathVariable String id) throws Exception{
+        byte[] pdf=payrollService.generatePayslipPdf(id);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,"attachment;filename=payslip.pdf")
+                .contentType(MediaType.APPLICATION_PDF).body(pdf);
+    }
+    @GetMapping("/employee/{empId}")
+    public ResponseEntity<List<Payroll>> getByEmployee(@PathVariable String empId){
+        return ResponseEntity.ok(payrollService.getByEmployee(empId));
+    }
+    @GetMapping
+    public ResponseEntity<List<Payroll>> getByMonthYear(@RequestParam String month,@RequestParam int year){
+        return ResponseEntity.ok(payrollService.getByMonthYear(month,year));
+    }
+}
+
+EOF
+
+package com.example.employee.controller;
+import com.example.employee.model.Performance;
+import com.example.employee.service.PerformanceService;
+import io.swagger.v3.oas.annotations.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+import java.util.*;
+@RestController
+@RequestMapping("/api/performance")
+@CrossOrigin(origins = "*")
+@RequiredArgsConstructor
+@Tag(name = "Performance Management", description = "APIs for performance reviews")
+public class PerformanceController {
+    private final PerformanceService service;
+
+    @PostMapping
+    @Operation(summary = "Create performance review")
+    public ResponseEntity<Performance> create(@RequestBody Performance p){
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.createReview(p));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update performance review")
+    public ResponseEntity<Performance> update(@PathVariable String id,@RequestBody Performance p){
+        return ResponseEntity.ok(service.updateReview(id,p));
+    }
+
+    @GetMapping("/employee/{empId}")
+    @Operation(summary = "Get reviews by employee")
+    public ResponseEntity<List<Performance>> getByEmployee(@PathVariable String empId){
+        return ResponseEntity.ok(service.getByEmployee(empId));
+    }
+
+    @GetMapping("/employee/{empId}/summary")
+    @Operation(summary = "Get employee performance summary")
+    public ResponseEntity<Map<String,Object>> getSummary(@PathVariable String empId){
+        return ResponseEntity.ok(service.getEmployeeSummary(empId));
+    }
+
+    @GetMapping("/year/{year}")
+    @Operation(summary = "Get reviews by year")
+    public ResponseEntity<List<Performance>> getByYear(@PathVariable int year){
+        return ResponseEntity.ok(service.getByYear(year));
+    }
+
+    @GetMapping
+    @Operation(summary = "Get all reviews")
+    public ResponseEntity<List<Performance>> getAll(){
+        return ResponseEntity.ok(service.getAll());
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete review")
+    public ResponseEntity<Map<String,String>> delete(@PathVariable String id){
+        service.delete(id);
+        return ResponseEntity.ok(Map.of("message","Review deleted"));
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String,String>> handleError(RuntimeException e){
+        return ResponseEntity.badRequest().body(Map.of("error",e.getMessage()));
+    }
+}
+
+EOF
+
+
+package com.example.employee.dto;
+import lombok.Data;
+@Data
+public class LoginRequest {
+    private String username;
+    private String password;
+}
+
+EOF
+

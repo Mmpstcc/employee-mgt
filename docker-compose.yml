@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+
+  # ── MongoDB ──────────────────────────────────────────
+  mongodb:
+    image: mongo:7.0
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: employeedb
+    networks:
+      - emp-network
+
+  # ── Backend (Spring Boot) ─────────────────────────────
+  backend:
+    build: ./backend
+    container_name: employee-backend
+    ports:
+      - "8085:8080"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/employeedb
+    depends_on:
+      - mongodb
+    networks:
+      - emp-network
+    restart: on-failure
+
+  # ── Frontend (React + Nginx) ───────────────────────────
+  frontend:
+    build: ./frontend
+    container_name: employee-frontend
+    ports:
+      - "8086:80"
+    depends_on:
+      - backend
+    networks:
+      - emp-network
+
+volumes:
+  mongo-data:
+
+networks:
+  emp-network:
+    driver: bridge

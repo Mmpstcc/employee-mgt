@@ -1,0 +1,55 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emp-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: emp-backend
+  template:
+    metadata:
+      labels:
+        app: emp-backend
+    spec:
+      containers:
+        - name: emp-backend
+          image: your-dockerhub-username/emp-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATA_MONGODB_URI
+              value: mongodb://mongodb-0.mongodb:27017/employeedb
+          livenessProbe:
+            httpGet:
+              path: /api/employees
+              port: 8080
+            initialDelaySeconds: 40
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/employees
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  selector:
+    app: emp-backend
+  ports:
+    - port: 8080
+      targetPort: 8080

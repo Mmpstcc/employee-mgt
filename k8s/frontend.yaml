@@ -1,0 +1,42 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emp-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: emp-frontend
+  template:
+    metadata:
+      labels:
+        app: emp-frontend
+    spec:
+      containers:
+        - name: emp-frontend
+          image: your-dockerhub-username/emp-frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  type: NodePort
+  selector:
+    app: emp-frontend
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30090     # Access: minikubeIP:30090
