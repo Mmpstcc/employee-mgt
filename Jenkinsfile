@@ -71,27 +71,17 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Deploy') {
             steps {
-                echo '🚀 Deploying to Minikube...'
+                echo '🚀 Deploying with Docker Compose...'
                 sh """
-                    kubectl set image deployment/emp-backend  emp-backend=${BACKEND_IMG}:${TAG}  --record || \
-                    kubectl apply -f k8s/
-                    kubectl set image deployment/emp-frontend emp-frontend=${FRONTEND_IMG}:${TAG} --record
+                    docker-compose down || true
+                    docker-compose up -d --build
+                    echo "=== Running Containers ==="
+                    docker ps
                 """
-                sh 'kubectl rollout status deployment/emp-backend  --timeout=120s'
-                sh 'kubectl rollout status deployment/emp-frontend --timeout=120s'
             }
         }
     }
-
-    post {
-        success { echo "✅ Build #${TAG} deployed successfully!" }
-        failure {
-            echo "❌ Build failed — rolling back..."
-            sh 'kubectl rollout undo deployment/emp-backend  || true'
-            sh 'kubectl rollout undo deployment/emp-frontend || true'
-        }
-        always { sh 'docker logout || true' }
     }
 }
