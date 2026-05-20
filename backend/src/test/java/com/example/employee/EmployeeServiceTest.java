@@ -109,6 +109,6 @@ class EmployeeServiceTest {
         var stats = service.getStats();
 
         assertEquals(2L, stats.get("total"));
-        assertEquals(1, ((List<?>) stats.get("active")).size());
+        assertEquals(1L, stats.get("active"));
     }
 }
