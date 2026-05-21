@@ -1,4 +1,3 @@
-cat > ~/employee-mgmt-complete/employee-mgmt/backend/src/test/java/com/example/employee/EmployeeControllerTest.java << 'EOF'
 package com.example.employee;
 
 import com.example.employee.controller.EmployeeController;
@@ -103,5 +102,3 @@ public class EmployeeControllerTest {
                 .andExpect(status().isOk());
     }
 }
-EOF
-echo "✅ EmployeeControllerTest fixed"
