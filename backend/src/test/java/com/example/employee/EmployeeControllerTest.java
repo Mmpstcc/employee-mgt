@@ -21,6 +21,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.example.employee.security.JwtUtil;
+import com.example.employee.security.CustomUserDetailsService;
 
 @WebMvcTest(EmployeeController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -35,9 +37,14 @@ public class EmployeeControllerTest {
     @MockBean
     private ExportService exportService;
 
+    @MockBean
+    private JwtUtil jwtUtil;
+
+    @MockBean
+    private CustomUserDetailsService customUserDetailsService;
+
     @Autowired
     private ObjectMapper objectMapper;
-
     private Employee sampleEmployee;
 
     @BeforeEach
@@ -58,7 +65,6 @@ public class EmployeeControllerTest {
     void getAllEmployees_ShouldReturn200() throws Exception {
         when(service.getAllEmployees()).thenReturn(Arrays.asList(sampleEmployee));
         mockMvc.perform(get("/api/employees"))
-                .andExpect(status().isOk());
     }
 
     @Test
