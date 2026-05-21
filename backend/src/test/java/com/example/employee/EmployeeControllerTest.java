@@ -23,8 +23,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import com.example.employee.security.JwtUtil;
 import com.example.employee.security.CustomUserDetailsService;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 
-@WebMvcTest(EmployeeController.class)
+@WebMvcTest(
+    controllers = EmployeeController.class,
+    excludeAutoConfiguration = SecurityAutoConfiguration.class
+)
 @AutoConfigureMockMvc(addFilters = false)
 public class EmployeeControllerTest {
 
