@@ -56,9 +56,7 @@ public class EmployeeControllerTest {
     @Test
     @WithMockUser
     void getAllEmployees_ShouldReturn200() throws Exception {
-        Page<Employee> page = new PageImpl<>(Arrays.asList(sampleEmployee));
-        when(service.getAllEmployees(anyInt(), anyInt(), anyString())).thenReturn(page);
-
+        when(service.getAllEmployees()).thenReturn(Arrays.asList(sampleEmployee));
         mockMvc.perform(get("/api/employees"))
                 .andExpect(status().isOk());
     }
