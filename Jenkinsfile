@@ -66,9 +66,7 @@ pipeline {
                 )]) {
 
                     sh '''
-                        echo "Restarting Docker service..."
-                        sudo systemctl restart docker
-
+                        
                         sleep 10
 
                         echo "$DPASS" | docker login -u "$DUSER" --password-stdin
