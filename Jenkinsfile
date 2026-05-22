@@ -64,7 +64,16 @@ pipeline {
                     usernameVariable: 'DUSER',
                     passwordVariable: 'DPASS'
                 )]) {
-                    sh "echo $DPASS | docker login -u $DUSER --password-stdin"
+
+                    sh '''
+                        echo "Restarting Docker service..."
+                        sudo systemctl restart docker
+
+                        sleep 10
+
+                        echo "$DPASS" | docker login -u "$DUSER" --password-stdin
+                    '''
+                
                     sh "docker push ${BACKEND_IMG}:${TAG}  && docker push ${BACKEND_IMG}:latest"
                     sh "docker push ${FRONTEND_IMG}:${TAG} && docker push ${FRONTEND_IMG}:latest"
                 }
