@@ -17,7 +17,7 @@ services:
 
   # ── Backend (Spring Boot) ─────────────────────────────
   backend:
-    build: ./backend
+    image: mmpstscc/emp-backend:latest
     container_name: employee-backend
     ports:
       - "8085:8080"
@@ -31,7 +31,7 @@ services:
 
   # ── Frontend (React + Nginx) ───────────────────────────
   frontend:
-    build: ./frontend
+    image: mmpstscc/emp-frontend:latest
     container_name: employee-frontend
     ports:
       - "8086:80"
