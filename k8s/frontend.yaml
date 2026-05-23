@@ -18,7 +18,7 @@ spec:
           image: mmpstscc/emp-frontend:7
           imagePullPolicy: Always
           ports:
-            - containerPort: 80
+            - containerPort: 8086
           resources:
             requests:
               memory: "64Mi"
@@ -37,6 +37,6 @@ spec:
   selector:
     app: emp-frontend
   ports:
-    - port: 80
-      targetPort: 80
+    - port: 8086
+      targetPort: 8086
       nodePort: 30090     # Access: minikubeIP:30090
