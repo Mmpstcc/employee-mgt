@@ -80,33 +80,34 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
 
-    steps {
+            steps {
 
-        echo '🚀 Deploying to Kubernetes...'
-        sh 'docker rm -f $(docker ps -aq) || true'
+                echo '🚀 Deploying to Kubernetes...'
 
-        withKubeConfig([credentialsId: 'kubeconfig']) {
+                sh 'docker rm -f $(docker ps -aq) || true'
 
-            sh """
+                withKubeConfig([credentialsId: 'kubeconfig']) {
 
-                kubectl apply -f k8s/mongodb.yaml
+                    sh """
 
-                kubectl apply -f k8s/backend.yaml
+                        kubectl apply -f k8s/mongodb.yaml
 
-                kubectl apply -f k8s/frontend.yaml
+                        kubectl apply -f k8s/backend.yaml
 
-                echo "=== Kubernetes Resources ==="
+                        kubectl apply -f k8s/frontend.yaml
 
-                kubectl get pods
+                        echo "=== Kubernetes Resources ==="
 
-                kubectl get svc
+                        kubectl get pods
 
-            """
+                        kubectl get svc
+
+                    """
+                }
+            }
         }
     }
 }
-
-    
         
         
         
