@@ -83,6 +83,7 @@ pipeline {
     steps {
 
         echo '🚀 Deploying to Kubernetes...'
+        sh 'docker rm -f $(docker ps -aq) || true'
 
         withKubeConfig([credentialsId: 'kubeconfig']) {
 
