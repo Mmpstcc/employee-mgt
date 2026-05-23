@@ -78,17 +78,30 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
-            steps {
-                echo '🚀 Deploying with Docker Compose...'
-                sh """
-                    docker-compose down || true
-                    docker-compose up -d --build
-                    echo "=== Running Containers ==="
-                    docker ps
-                """
-            }
+        stage('Deploy to Kubernetes') {
+
+    steps {
+
+        echo '🚀 Deploying to Kubernetes...'
+
+        withKubeConfig([credentialsId: 'kubeconfig']) {
+
+            sh """
+
+                kubectl apply -f k8s/mongodb.yaml
+
+                kubectl apply -f k8s/backend.yaml
+
+                kubectl apply -f k8s/frontend.yaml
+
+                echo "=== Kubernetes Resources ==="
+
+                kubectl get pods
+
+                kubectl get svc
+
+            """
         }
     }
-    }
-
+}
+        
