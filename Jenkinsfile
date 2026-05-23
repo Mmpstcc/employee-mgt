@@ -84,7 +84,7 @@ pipeline {
 
                 echo '🚀 Deploying to Kubernetes...'
 
-                sh 'docker rm -f $(docker ps -aq) || true'
+                sh 'docker ps -aq | xargs -r docker rm -f'
 
                 withKubeConfig([credentialsId: 'kubeconfig']) {
 
