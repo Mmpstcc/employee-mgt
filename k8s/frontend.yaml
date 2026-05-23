@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: emp-frontend
-          image: your-dockerhub-username/emp-frontend:latest
+          image: mmpstscc/emp-frontend:7
           imagePullPolicy: Always
           ports:
             - containerPort: 80
