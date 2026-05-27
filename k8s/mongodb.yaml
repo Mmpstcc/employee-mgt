@@ -1,7 +1,7 @@
 ---
 # MongoDB StatefulSet (persistent storage)
 apiVersion: apps/v1
-kind: StatefulSet
+kind: deployment
 metadata:
   name: mongodb
 spec:
@@ -23,17 +23,6 @@ spec:
           env:
             - name: MONGO_INITDB_DATABASE
               value: employeedb
-          volumeMounts:
-            - name: mongo-storage
-              mountPath: /data/db
-  volumeClaimTemplates:
-    - metadata:
-        name: mongo-storage
-      spec:
-        accessModes: ["ReadWriteOnce"]
-        resources:
-          requests:
-            storage: 1Gi
 
 ---
 # MongoDB internal Service
@@ -47,5 +36,5 @@ spec:
   ports:
     - port: 27017
       targetPort: 27017
-  clusterIP: None # Headless service for StatefulSet
+ 
   
