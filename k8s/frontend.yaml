@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: emp-frontend
-          image: mmpstscc/emp-frontend:7
+          image: mmpstscc/emp-frontend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8086
