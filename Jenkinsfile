@@ -78,6 +78,23 @@ pipeline {
             }
         }
 
+        stage('Docker Cleanup') {
+    steps {
+
+        echo '🧹 Removing unused Docker images...'
+
+        sh '''
+
+            docker image prune -af
+
+            docker container prune -f
+
+            docker builder prune -af
+
+        '''
+    }
+}
+        
         stage('Deploy to Kubernetes') {
 
             steps {
