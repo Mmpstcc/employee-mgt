@@ -47,4 +47,5 @@ spec:
   ports:
     - port: 27017
       targetPort: 27017
-  clusterIP: none    # Headless service for StatefulSet
+  clusterIP: none # Headless service for StatefulSet
+  
