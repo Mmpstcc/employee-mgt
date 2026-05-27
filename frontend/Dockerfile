@@ -16,7 +16,7 @@ RUN echo 'server { \
   root /usr/share/nginx/html; \
   index index.html; \
   location / { try_files $uri $uri/ /index.html; } \
-  location /api { proxy_pass http://emp-backend:8085; } \
+  location /api { proxy_pass http://backend-service:8080; } \
 }' > /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
