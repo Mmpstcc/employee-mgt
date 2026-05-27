@@ -18,7 +18,7 @@ spec:
           image: mmpstscc/emp-backend:7
           imagePullPolicy: Always
           ports:
-            - containerPort: 8085
+            - containerPort: 8080
           env:
             - name: SPRING_DATA_MONGODB_URI
               value: mongodb://mongodb:27017/employeedb
@@ -31,7 +31,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /api/employees
-              port: 8085
+              port: 8080
             initialDelaySeconds: 20
             periodSeconds: 5
           resources:
@@ -51,5 +51,5 @@ spec:
   selector:
     app: emp-backend
   ports:
-    - port: 8085
-      targetPort: 8085
+    - port: 8080
+      targetPort: 8080
