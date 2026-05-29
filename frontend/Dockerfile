@@ -12,12 +12,12 @@ COPY --from=builder /app/build /usr/share/nginx/html
 
 # Nginx config to support React Router
 RUN echo 'server { \
-  listen 80; \
+  listen 8086; \
   root /usr/share/nginx/html; \
   index index.html; \
   location / { try_files $uri $uri/ /index.html; } \
   location /api { proxy_pass http://backend-service:8085; } \
 }' > /etc/nginx/conf.d/default.conf
 
-EXPOSE 80
+EXPOSE 8086
 CMD ["nginx", "-g", "daemon off;"]
