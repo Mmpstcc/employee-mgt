@@ -112,7 +112,8 @@ pipeline {
                         kubectl apply -f k8s/backend.yaml
 
                         kubectl apply -f k8s/frontend.yaml
-
+                        kubectl apply -f k8s/Ingress.yaml
+                        kubectl apply -f k8s/Ingress.yaml
                         echo "=== Kubernetes Resources ==="
 
                         kubectl get pods
