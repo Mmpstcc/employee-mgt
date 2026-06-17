@@ -1,42 +1,88 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: emp-frontend
+  namespace: default
+  labels:
+    app: emp-frontend
 spec:
-  replicas: 1
+  replicas: 2                          # ✅ 1 pod per worker node
   selector:
     matchLabels:
       app: emp-frontend
+
+  strategy:
+    type: RollingUpdate                # ✅ Zero downtime
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
   template:
     metadata:
       labels:
         app: emp-frontend
     spec:
+
+      # ✅ Spread pods across FREE worker nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - emp-frontend
+              topologyKey: kubernetes.io/hostname  # different nodes
+
       containers:
-        - name: emp-frontend
-          image: mmpstscc/emp-frontend:latest
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8086
-          resources:
-            requests:
-              memory: "64Mi"
-              cpu: "100m"
-            limits:
-              memory: "128Mi"
-              cpu: "200m"
+      - name: emp-frontend
+        image: mmpstscc/emp-frontend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8086            # ✅ Nginx serves on 80, not 8086
+
+        # ✅ Health checks added
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8086
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 3
+
+        # ✅ Increased memory for React app
+        resources:
+          requests:
+            memory: "128Mi"            # ✅ was 64Mi — too low for React
+            cpu: "100m"
+          limits:
+            memory: "256Mi"            # ✅ was 128Mi — increased
+            cpu: "200m"
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: frontend-service
+  namespace: default
 spec:
-  type: NodePort
+  type: NodePort                       # ✅ Keep NodePort for direct access
   selector:
     app: emp-frontend
   ports:
-    - port: 8086
-      targetPort: 8086
-      nodePort: 30090     # Access: minikubeIP:30090
+  - name: http
+    port: 8086                           # ✅ Service port
+    targetPort: 8086                   # ✅ Match container port
+    nodePort: 30090                    # ✅ Access: workerIP:30090
+
