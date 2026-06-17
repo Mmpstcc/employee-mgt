@@ -1,39 +1,114 @@
+# ✅ Persistent Volume — data survives pod restarts
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce                      # one node at a time
+  resources:
+    requests:
+      storage: 5Gi                     # 5GB for MongoDB data
+
 ---
-# MongoDB StatefulSet (persistent storage)
-apiVersion: apps/v1
+apiVersion: apps/v1                    # ✅ FIXED — was missing!
 kind: Deployment
 metadata:
   name: mongodb
+  namespace: default
+  labels:
+    app: mongodb
 spec:
-  replicas: 1
+  replicas: 1                          # ✅ MongoDB = always 1 (use ReplicaSet for HA)
   selector:
     matchLabels:
       app: mongodb
+
+  strategy:
+    type: Recreate                     # ✅ MongoDB needs Recreate not RollingUpdate
+
   template:
     metadata:
       labels:
         app: mongodb
     spec:
+
+      # ✅ Pin MongoDB to one stable worker node
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - abhinit              # prefer abhinit for MongoDB
+
       containers:
-        - name: mongodb
-          image: mongo:7.0
-          ports:
-            - containerPort: 27017
-          env:
-            - name: MONGO_INITDB_DATABASE
-              value: employeedb
+      - name: mongodb
+        image: mongo:7.0
+        ports:
+        - containerPort: 27017
+
+        env:
+        - name: MONGO_INITDB_DATABASE
+          value: employeedb
+
+        # ✅ Health checks for MongoDB
+        livenessProbe:
+          exec:
+            command:
+            - mongosh
+            - --eval
+            - "db.adminCommand('ping')"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 3
+
+        readinessProbe:
+          exec:
+            command:
+            - mongosh
+            - --eval
+            - "db.adminCommand('ping')"
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          failureThreshold: 3
+
+        # ✅ Resource limits added
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+        # ✅ Persistent storage — data survives restarts!
+        volumeMounts:
+        - name: mongodb-storage
+          mountPath: /data/db          # MongoDB default data path
+
+      volumes:
+      - name: mongodb-storage
+        persistentVolumeClaim:
+          claimName: mongodb-pvc       # ✅ linked to PVC above
 
 ---
-# MongoDB internal Service
 apiVersion: v1
 kind: Service
 metadata:
   name: mongodb
+  namespace: default
 spec:
+  type: ClusterIP                      # ✅ Internal only — no external access
   selector:
     app: mongodb
   ports:
-    - port: 27017
-      targetPort: 27017
+  - name: mongo
+    port: 27017
+    targetPort: 27017
  
   
