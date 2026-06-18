@@ -1,0 +1,34 @@
+# Create this file: k8s/mongodb-pv.yaml
+
+# ─────────────────────────────────────
+# Step 1: Create PersistentVolume
+# ─────────────────────────────────────
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongodb-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain   # data stays even if PVC deleted
+  hostPath:
+    path: /mnt/mongodb-data               # directory on soumik node
+    type: DirectoryOrCreate
+
+---
+# ─────────────────────────────────────
+# Step 2: PVC binds to above PV
+# ─────────────────────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
