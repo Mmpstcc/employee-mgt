@@ -108,13 +108,13 @@ pipeline {
                     sh """
 
                         kubectl apply -f k8s/mongodb.yaml
-
+                        kubectl apply -f k8s/mongodb-pv.yaml
                         kubectl apply -f k8s/backend.yaml
-
                         kubectl apply -f k8s/frontend.yaml
                         kubectl apply -f k8s/Ingress.yaml
                         kubectl apply -f k8s/Ingress.yaml
                         kubectl apply -f k8s/hpa.yaml
+                        
                         echo "=== Kubernetes Resources ==="
 
                         kubectl get pods
