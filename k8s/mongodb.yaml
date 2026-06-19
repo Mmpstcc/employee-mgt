@@ -1,4 +1,3 @@
-# ✅ Persistent Volume — data survives pod restarts
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -6,13 +5,13 @@ metadata:
   namespace: default
 spec:
   accessModes:
-  - ReadWriteOnce                      # one node at a time
+    - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi                     # 5GB for MongoDB data
+      storage: 5Gi
 
 ---
-apiVersion: apps/v1                    # ✅ FIXED — was missing!
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mongodb
@@ -20,35 +19,23 @@ metadata:
   labels:
     app: mongodb
 spec:
-  replicas: 1                          # ✅ MongoDB = always 1 (use ReplicaSet for HA)
+  replicas: 1
   selector:
     matchLabels:
       app: mongodb
 
   strategy:
-    type: Recreate                     # ✅ MongoDB needs Recreate not RollingUpdate
+    type: Recreate
 
   template:
     metadata:
       labels:
         app: mongodb
     spec:
-
-      # ✅ Pin MongoDB to one stable worker node
-      affinity:
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            preference:
-              matchExpressions:
-              - key: kubernetes.io/hostname
-                operator: In
-                values:
-                - abhinit              # prefer abhinit for MongoDB
-
       containers:
       - name: mongodb
         image: mongo:7.0
+
         ports:
         - containerPort: 27017
 
@@ -56,28 +43,6 @@ spec:
         - name: MONGO_INITDB_DATABASE
           value: employeedb
 
-        # ✅ Health checks for MongoDB
-        livenessProbe:
-          exec:
-            command:
-            - mongosh
-            - --eval
-            - "db.adminCommand('ping')"
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          failureThreshold: 3
-
-        readinessProbe:
-          exec:
-            command:
-            - mongosh
-            - --eval
-            - "db.adminCommand('ping')"
-          initialDelaySeconds: 20
-          periodSeconds: 5
-          failureThreshold: 3
-
-        # ✅ Resource limits added
         resources:
           requests:
             memory: "256Mi"
@@ -86,15 +51,14 @@ spec:
             memory: "512Mi"
             cpu: "500m"
 
-        # ✅ Persistent storage — data survives restarts!
         volumeMounts:
         - name: mongodb-storage
-          mountPath: /data/db          # MongoDB default data path
+          mountPath: /data/db
 
       volumes:
       - name: mongodb-storage
         persistentVolumeClaim:
-          claimName: mongodb-pvc       # ✅ linked to PVC above
+          claimName: mongodb-pvc
 
 ---
 apiVersion: v1
@@ -103,7 +67,7 @@ metadata:
   name: mongodb
   namespace: default
 spec:
-  type: ClusterIP                      # ✅ Internal only — no external access
+  type: ClusterIP
   selector:
     app: mongodb
   ports:
