@@ -136,8 +136,8 @@ pipeline {
                         kubectl set image deployment/emp-frontend emp-frontend=${FRONTEND_IMG}:${TAG}
 
                         # Wait for rollouts
-                        kubectl rollout status deployment/emp-backend  --timeout=120s
-                        kubectl rollout status deployment/emp-frontend --timeout=120s
+                        kubectl rollout status deployment/emp-backend  --timeout=140s
+                        kubectl rollout status deployment/emp-frontend --timeout=140s
 
                         echo "=== Pods ==="
                         kubectl get pods -o wide
